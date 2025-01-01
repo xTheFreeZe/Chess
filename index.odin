@@ -72,7 +72,6 @@ main :: proc() {
             fmt.printf("Window Resized to width: %d and height: %d \n", window.width, window.height)
         }
         rl.BeginDrawing()
-        // Divide by 5 to make the bg darker
         rl.ClearBackground(rl.DARKBLUE/5)
         rl.DrawText("Chess Engine", 10, 10, 20, rl.WHITE)
         init_board()
