@@ -31,6 +31,16 @@ init_board :: proc() {
 load_pieces :: proc(pieces: ^Pieces_Images) {
     pieces.white_king = rl.LoadTexture("assets/White_King.png")
     pieces.white_queen = rl.LoadTexture("assets/White_Queen.png")
+
+    pieces.white_king.width = 75
+    pieces.white_king.height = 75
+    pieces.white_queen.width = 75
+    pieces.white_queen.height = 75
+}
+
+unload_pieces :: proc(pieces: ^Pieces_Images) {
+    rl.UnloadTexture(pieces.white_king)
+    rl.UnloadTexture(pieces.white_queen)
 }
 
 draw_pieces :: proc(pieces: ^Pieces_Images) {
@@ -43,8 +53,7 @@ main :: proc() {
     pieces := Pieces_Images{}
 
     defer {
-        rl.UnloadTexture(pieces.white_king)
-        rl.UnloadTexture(pieces.white_queen)
+        unload_pieces(&pieces)
         rl.CloseWindow()
         fmt.println("Unloaded all images and closed the window")
     }
