@@ -110,6 +110,36 @@ fn (mut board Board) draw_pieces() {
 	}
 }
 
+fn (mut board Board) get_pieces() []rl.Vector2 {
+
+	mut positions := []rl.Vector2{}
+
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if board.pieces[i][j].image.id != 0 {
+				positions << rl.Vector2 {board.pieces[i][j].posx, board.pieces[i][j].posy}
+			}
+		}
+	}
+
+	return positions
+
+}
+
+fn (mut board Board) mouse_on_piece() bool {
+	mouse_pos := rl.get_mouse_position()
+	piece_positions := board.get_pieces()
+
+	for rect in piece_positions {
+		if rl.check_collision_point_rec(mouse_pos, rl.Rectangle{rect.x, rect.y, 75, 75}) {
+			rl.draw_circle_v(mouse_pos, 10, rl.red)
+			return true
+		}
+	}
+	rl.draw_circle_v(mouse_pos, 10, rl.green)
+	return false
+}
+
 fn main() {
 	// Only log errors / warnings
 	rl.set_trace_log_level(4)
@@ -149,6 +179,7 @@ fn main() {
 
 		draw_board()
 		board.draw_pieces()
+		board.mouse_on_piece()
 
 		rl.end_drawing()
 	}
