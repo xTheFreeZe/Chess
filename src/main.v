@@ -2,7 +2,7 @@ module main
 
 import raylib as rl
 
-const custom_dark_blue := rl.Color{0, u8(82 * 0.2), u8(172 * 0.2), u8(255 * 0.2)}
+const custom_dark_blue = rl.Color{0, u8(82 * 0.2), u8(172 * 0.2), u8(255 * 0.2)}
 
 struct Window {
 mut:
@@ -15,8 +15,8 @@ mut:
 
 struct Piece {
 mut:
-	posx int
-	posy int
+	posx  int
+	posy  int
 	image rl.Texture2D
 }
 
@@ -27,7 +27,7 @@ enum GameTurn {
 
 struct Board {
 mut:
-	pieces [8][8] Piece
+	pieces [8][8]Piece
 	turn   GameTurn
 }
 
@@ -44,31 +44,48 @@ fn draw_board() {
 }
 
 fn (mut board Board) load_pieces() {
-	black_piece_names := ['Black_Rook', 'Black_Bishop', 'Black_Knight', 'Black_Queen', 'Black_King', 'Black_Pawn']
-	white_piece_names := ['White_Rook', 'White_Bishop', 'White_Knight', 'White_Queen', 'White_King', 'White_Pawn']
+	black_piece_names := ['Black_Rook', 'Black_Bishop', 'Black_Knight', 'Black_Queen', 'Black_King',
+		'Black_Pawn']
+	white_piece_names := ['White_Rook', 'White_Bishop', 'White_Knight', 'White_Queen', 'White_King',
+		'White_Pawn']
 
 	for i := 0; i < 8; i++ {
-
-		mut index := 0;
+		mut index := 0
 		if i == 5 {
-			index = 2;
+			index = 2
 		} else if i == 6 {
-			index = 1;
+			index = 1
 		} else if i == 7 {
-			index = 0;
+			index = 0
 		} else {
-			index = i;
+			index = i
 		}
 
 		// Loads all pawns
-		board.pieces[1][i] = Piece{posx: i * 75 + 195, posy: 75 + 150, image: rl.load_texture('assets/png/${black_piece_names[5]}.png')}
-		board.pieces[6][i] = Piece{posx: i * 75 + 195, posy: 6 * 75 + 150, image: rl.load_texture('assets/png/${white_piece_names[5]}.png')}
+		board.pieces[1][i] = Piece{
+			posx:  i * 75 + 195
+			posy:  75 + 150
+			image: rl.load_texture('assets/png/${black_piece_names[5]}.png')
+		}
+		board.pieces[6][i] = Piece{
+			posx:  i * 75 + 195
+			posy:  6 * 75 + 150
+			image: rl.load_texture('assets/png/${white_piece_names[5]}.png')
+		}
 
 		// Black pieces
-		board.pieces[0][i] = Piece{posx: i * 75 + 195, posy: 0 * 75 + 150, image: rl.load_texture('assets/png/${black_piece_names[index]}.png')}
+		board.pieces[0][i] = Piece{
+			posx:  i * 75 + 195
+			posy:  0 * 75 + 150
+			image: rl.load_texture('assets/png/${black_piece_names[index]}.png')
+		}
 
 		// White pieces
-		board.pieces[7][i] = Piece{posx: i * 75 + 195, posy: 7 * 75 + 150, image: rl.load_texture('assets/png/${white_piece_names[index]}.png')}
+		board.pieces[7][i] = Piece{
+			posx:  i * 75 + 195
+			posy:  7 * 75 + 150
+			image: rl.load_texture('assets/png/${white_piece_names[index]}.png')
+		}
 	}
 }
 
@@ -96,34 +113,33 @@ fn (mut board Board) draw_pieces() {
 				center_offset := (piece_size - field_size) / 2
 
 				dest_rect := rl.Rectangle{
-					x: board.pieces[i][j].posx - center_offset
-					y: board.pieces[i][j].posy - center_offset
-					width: piece_size
+					x:      board.pieces[i][j].posx - center_offset
+					y:      board.pieces[i][j].posy - center_offset
+					width:  piece_size
 					height: piece_size
 				}
 
 				origin := rl.Vector2{0, 0}
 
-				rl.draw_texture_pro(board.pieces[i][j].image, source_rect, dest_rect, origin, 0, rl.white)
+				rl.draw_texture_pro(board.pieces[i][j].image, source_rect, dest_rect,
+					origin, 0, rl.white)
 			}
 		}
 	}
 }
 
 fn (mut board Board) get_pieces() []rl.Vector2 {
-
 	mut positions := []rl.Vector2{}
 
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			if board.pieces[i][j].image.id != 0 {
-				positions << rl.Vector2 {board.pieces[i][j].posx, board.pieces[i][j].posy}
+				positions << rl.Vector2{board.pieces[i][j].posx, board.pieces[i][j].posy}
 			}
 		}
 	}
 
 	return positions
-
 }
 
 fn (mut board Board) mouse_on_piece() bool {
