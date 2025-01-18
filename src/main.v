@@ -14,14 +14,21 @@ mut:
 }
 
 struct Piece {
+mut:
 	posx int
 	posy int
 	image rl.Texture2D
 }
 
-pub struct Board {
+enum GameTurn {
+	white
+	black
+}
+
+struct Board {
 mut:
 	pieces [8][8] Piece
+	turn   GameTurn
 }
 
 fn draw_board() {
@@ -37,11 +44,32 @@ fn draw_board() {
 }
 
 fn (mut board Board) load_pieces() {
-	mut tex := rl.load_texture("assets/png/Black_Rook.png")
-	board.pieces[0][0] = Piece{195, 150, tex}
+	black_piece_names := ['Black_Rook', 'Black_Bishop', 'Black_Knight', 'Black_Queen', 'Black_King', 'Black_Pawn']
+	white_piece_names := ['White_Rook', 'White_Bishop', 'White_Knight', 'White_Queen', 'White_King', 'White_Pawn']
 
-	tex = rl.load_texture("assets/png/Black_Bishop.png")
-	board.pieces[1][0] = Piece{270, 150, tex}
+	for i := 0; i < 8; i++ {
+
+		mut index := 0;
+		if i == 5 {
+			index = 2;
+		} else if i == 6 {
+			index = 1;
+		} else if i == 7 {
+			index = 0;
+		} else {
+			index = i;
+		}
+
+		// Loads all pawns
+		board.pieces[1][i] = Piece{posx: i * 75 + 195, posy: 75 + 150, image: rl.load_texture('assets/png/${black_piece_names[5]}.png')}
+		board.pieces[6][i] = Piece{posx: i * 75 + 195, posy: 6 * 75 + 150, image: rl.load_texture('assets/png/${white_piece_names[5]}.png')}
+
+		// Black pieces
+		board.pieces[0][i] = Piece{posx: i * 75 + 195, posy: 0 * 75 + 150, image: rl.load_texture('assets/png/${black_piece_names[index]}.png')}
+
+		// White pieces
+		board.pieces[7][i] = Piece{posx: i * 75 + 195, posy: 7 * 75 + 150, image: rl.load_texture('assets/png/${white_piece_names[index]}.png')}
+	}
 }
 
 fn (mut board Board) clear_pieces() {
@@ -83,6 +111,7 @@ fn (mut board Board) draw_pieces() {
 }
 
 fn main() {
+	// Only log errors / warnings
 	rl.set_trace_log_level(4)
 	rl.set_config_flags(.flag_vsync_hint)
 
@@ -100,6 +129,7 @@ fn main() {
 	rl.set_target_fps(window.fps)
 
 	board.load_pieces()
+	board.turn = .white
 
 	println('Window ready - All pieces loaded')
 
