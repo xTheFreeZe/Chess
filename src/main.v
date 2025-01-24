@@ -13,10 +13,10 @@ mut:
 	control_flags rl.ConfigFlags
 }
 
+@[heap]
 struct Piece {
 mut:
-	posx  int
-	posy  int
+	pos   rl.Vector2
 	image rl.Texture2D
 }
 
@@ -27,8 +27,9 @@ enum GameTurn {
 
 struct Board {
 mut:
-	pieces [8][8]Piece
-	turn   GameTurn
+	pieces         [8][8]Piece
+	selected_piece &Piece = unsafe { nil }
+	turn           GameTurn
 }
 
 fn draw_board() {
@@ -63,27 +64,23 @@ fn (mut board Board) load_pieces() {
 
 		// Loads all pawns
 		board.pieces[1][i] = Piece{
-			posx:  i * 75 + 195
-			posy:  75 + 150
+			pos:   rl.Vector2{i * 75 + 195, 75 + 150}
 			image: rl.load_texture('assets/png/${black_piece_names[5]}.png')
 		}
 		board.pieces[6][i] = Piece{
-			posx:  i * 75 + 195
-			posy:  6 * 75 + 150
+			pos:   rl.Vector2{i * 75 + 195, 6 * 75 + 150}
 			image: rl.load_texture('assets/png/${white_piece_names[5]}.png')
 		}
 
 		// Black pieces
 		board.pieces[0][i] = Piece{
-			posx:  i * 75 + 195
-			posy:  0 * 75 + 150
+			pos:   rl.Vector2{i * 75 + 195, 0 * 75 + 150}
 			image: rl.load_texture('assets/png/${black_piece_names[index]}.png')
 		}
 
 		// White pieces
 		board.pieces[7][i] = Piece{
-			posx:  i * 75 + 195
-			posy:  7 * 75 + 150
+			pos:   rl.Vector2{i * 75 + 195, 7 * 75 + 150}
 			image: rl.load_texture('assets/png/${white_piece_names[index]}.png')
 		}
 	}
@@ -113,8 +110,8 @@ fn (mut board Board) draw_pieces() {
 				center_offset := (piece_size - field_size) / 2
 
 				dest_rect := rl.Rectangle{
-					x:      board.pieces[i][j].posx - center_offset
-					y:      board.pieces[i][j].posy - center_offset
+					x:      board.pieces[i][j].pos.x - center_offset
+					y:      board.pieces[i][j].pos.y - center_offset
 					width:  piece_size
 					height: piece_size
 				}
@@ -128,13 +125,13 @@ fn (mut board Board) draw_pieces() {
 	}
 }
 
-fn (mut board Board) get_pieces() []rl.Vector2 {
-	mut positions := []rl.Vector2{}
+fn (mut board Board) get_pieces() []Piece {
+	mut positions := []Piece{}
 
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			if board.pieces[i][j].image.id != 0 {
-				positions << rl.Vector2{board.pieces[i][j].posx, board.pieces[i][j].posy}
+				positions << Piece{board.pieces[i][j].pos, board.pieces[i][j].image}
 			}
 		}
 	}
@@ -147,13 +144,39 @@ fn (mut board Board) mouse_on_piece() bool {
 	piece_positions := board.get_pieces()
 
 	for rect in piece_positions {
-		if rl.check_collision_point_rec(mouse_pos, rl.Rectangle{rect.x, rect.y, 75, 75}) {
-			rl.draw_circle_v(mouse_pos, 10, rl.red)
+		if rl.check_collision_point_rec(mouse_pos, rl.Rectangle{rect.pos.x, rect.pos.y, 75, 75}) {
 			return true
 		}
 	}
-	rl.draw_circle_v(mouse_pos, 10, rl.green)
 	return false
+}
+
+fn (mut board Board) drag_piece(mut piece Piece) {
+	piece.pos = rl.get_mouse_position()
+
+	rl.draw_texture(piece.image, int(piece.pos.x), int(piece.pos.y), rl.white)
+}
+
+fn (mut board Board) hanlde_input() {
+	if rl.is_mouse_button_pressed(0) {
+		mut piece_positions := board.get_pieces()
+
+		for i, mut rect in piece_positions {
+			if rl.check_collision_point_rec(rl.get_mouse_position(), rl.Rectangle{rect.pos.x, rect.pos.y, 75, 75}) {
+				println('Piece clicked at x: ${i % 8} y: ${i / 8} with id: ${rect.image.id}')
+				board.selected_piece = &rect
+				break
+			}
+		}
+	}
+
+	if rl.is_mouse_button_down(0) && board.selected_piece != unsafe { nil } {
+		board.drag_piece(mut *board.selected_piece)
+	}
+
+	if rl.is_mouse_button_released(0) {
+		board.selected_piece = unsafe { nil }
+	}
 }
 
 fn main() {
@@ -195,7 +218,7 @@ fn main() {
 
 		draw_board()
 		board.draw_pieces()
-		board.mouse_on_piece()
+		board.hanlde_input()
 
 		rl.end_drawing()
 	}
